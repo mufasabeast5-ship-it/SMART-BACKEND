@@ -1,0 +1,6 @@
+Options -Indexes
+
+# Allow cross-origin requests — actual CORS headers are set in PHP
+# This file only prevents directory listing and sets charset
+
+AddDefaultCharset UTF-8

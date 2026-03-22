@@ -1,0 +1,8 @@
+{
+    "name": "smart-attendance-backend",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "C:\\xampp\\php\\php.exe -S localhost:8081 router.php"
+    }
+}
