@@ -31,35 +31,39 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     errorResponse('Invalid email address');
 }
 
-$pdo = getDB();
+try {
+    $pdo = getDB();
 
-$check = $pdo->prepare('SELECT id FROM users WHERE email = ?');
-$check->execute([$email]);
-if ($check->fetch()) {
-    errorResponse('Email already registered', 409);
+    $check = $pdo->prepare('SELECT id FROM users WHERE email = ?');
+    $check->execute([$email]);
+    if ($check->fetch()) {
+        errorResponse('Email already registered', 409);
+    }
+
+    $hash = password_hash($pass, PASSWORD_BCRYPT);
+    $ins = $pdo->prepare('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)');
+    $ins->execute([$name, $email, $hash, $role]);
+    $id = (int) $pdo->lastInsertId();
+
+    if ($role === 'teacher') {
+        $insT = $pdo->prepare('INSERT INTO teachers (name, email) VALUES (?, ?)');
+        $insT->execute([$name, $email]);
+    }
+
+    $_SESSION['user_id'] = $id;
+    $_SESSION['user_name'] = $name;
+    $_SESSION['user_email'] = $email;
+    $_SESSION['user_role'] = $role;
+
+    jsonResponse([
+        'success' => true,
+        'user' => [
+            'id' => $id,
+            'name' => $name,
+            'email' => $email,
+            'role' => $role,
+        ],
+    ], 201);
+} catch (Exception $e) {
+    errorResponse('Database error: ' . $e->getMessage(), 500);
 }
-
-$hash = password_hash($pass, PASSWORD_BCRYPT);
-$ins = $pdo->prepare('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)');
-$ins->execute([$name, $email, $hash, $role]);
-$id = (int) $pdo->lastInsertId();
-
-if ($role === 'teacher') {
-    $insT = $pdo->prepare('INSERT INTO teachers (name, email) VALUES (?, ?)');
-    $insT->execute([$name, $email]);
-}
-
-$_SESSION['user_id'] = $id;
-$_SESSION['user_name'] = $name;
-$_SESSION['user_email'] = $email;
-$_SESSION['user_role'] = $role;
-
-jsonResponse([
-    'success' => true,
-    'user' => [
-        'id' => $id,
-        'name' => $name,
-        'email' => $email,
-        'role' => $role,
-    ],
-], 201);

@@ -19,26 +19,30 @@ if (!$email || !$pass) {
     errorResponse('Email and password are required');
 }
 
-$pdo = getDB();
-$stmt = $pdo->prepare('SELECT id, name, email, password, role FROM users WHERE email = ?');
-$stmt->execute([$email]);
-$user = $stmt->fetch();
+try {
+    $pdo = getDB();
+    $stmt = $pdo->prepare('SELECT id, name, email, password, role FROM users WHERE email = ?');
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
 
-if (!$user || !password_verify($pass, $user['password'])) {
-    errorResponse('Invalid credentials', 401);
+    if (!$user || !password_verify($pass, $user['password'])) {
+        errorResponse('Invalid credentials', 401);
+    }
+
+    $_SESSION['user_id'] = $user['id'];
+    $_SESSION['user_name'] = $user['name'];
+    $_SESSION['user_email'] = $user['email'];
+    $_SESSION['user_role'] = $user['role'];
+
+    jsonResponse([
+        'success' => true,
+        'user' => [
+            'id' => $user['id'],
+            'name' => $user['name'],
+            'email' => $email, // email from $user['email']
+            'role' => $user['role'],
+        ],
+    ]);
+} catch (Exception $e) {
+    errorResponse('Database error: ' . $e->getMessage(), 500);
 }
-
-$_SESSION['user_id'] = $user['id'];
-$_SESSION['user_name'] = $user['name'];
-$_SESSION['user_email'] = $user['email'];
-$_SESSION['user_role'] = $user['role'];
-
-jsonResponse([
-    'success' => true,
-    'user' => [
-        'id' => $user['id'],
-        'name' => $user['name'],
-        'email' => $user['email'],
-        'role' => $user['role'],
-    ],
-]);

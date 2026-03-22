@@ -10,10 +10,10 @@ function configureSession(): void
     session_set_cookie_params([
         'lifetime' => 0,
         'path' => '/',
-        'domain' => '',       // empty = current domain only (localhost)
-        'secure' => false,    // HTTP is fine in dev
+        'domain' => '',       // empty = current domain only
+        'secure' => true,     // Required for SameSite=None
         'httponly' => true,
-        'samesite' => 'Lax',    // 'Lax' works for same-site proxy requests
+        'samesite' => 'None',   // Required for cross-domain cookies
     ]);
 
     session_name('SMART_SESS');

@@ -7,6 +7,12 @@ $file = __DIR__ . $uri;
 
 // If the URI points to an existing file (e.g. a real .php), serve it
 if ($uri !== '/' && file_exists($file) && !is_dir($file)) {
+    // Handle OPTIONS preflight requests even for existing files
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        require_once __DIR__ . '/config/cors.php';
+        applyCors();
+        exit;
+    }
     return false; // let PHP built-in server handle it directly
 }
 
