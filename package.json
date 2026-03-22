@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "dev": "C:\\xampp\\php\\php.exe -S localhost:8081 router.php"
+        "start": "php -S 0.0.0.0:$PORT router.php",
+        "dev": "php -S localhost:8081 router.php"
     }
 }
