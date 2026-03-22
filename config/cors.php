@@ -8,10 +8,19 @@ function applyCors(): void
 {
     $envOrigins = getenv('ALLOWED_ORIGINS');
     $defaultOrigins = ['http://localhost:8080', 'http://localhost:3000', 'http://127.0.0.1:8080'];
-    $allowed = $envOrigins ? explode(',', $envOrigins) : $defaultOrigins;
+    $allowed = $envOrigins ? array_map('trim', explode(',', $envOrigins)) : $defaultOrigins;
     $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
-    if (in_array($origin, $allowed, true)) {
+    // Check if origin is explicitly allowed or matches a pattern (localhost or .vercel.app)
+    $isAllowed = in_array($origin, $allowed, true);
+    if (!$isAllowed && $origin) {
+        $host = parse_url($origin, PHP_URL_HOST);
+        if ($host && (str_ends_with($host, '.vercel.app') || $host === 'localhost' || $host === '127.0.0.1')) {
+            $isAllowed = true;
+        }
+    }
+
+    if ($isAllowed && $origin) {
         header("Access-Control-Allow-Origin: $origin");
     } else {
         header("Access-Control-Allow-Origin: " . ($allowed[0] ?? $defaultOrigins[0]));
